@@ -1,0 +1,39 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+  - name: Compile
+    shell: "env GOOS=linux GOARCH=arm GOARM=7 go build -o microservice"
+    args:
+      chdir: /home/lzuccarelli/Projects/golang-simple-service
+      executable: /bin/bash
+    register: compile 
+  
+  - debug: msg={{ compile.stdout }} 
+
+
+- hosts: pine
+  tasks:
+  - name: Mkdir Projects
+    shell: mkdir -p Projects/golang-simple-microservice
+    register: output 
+    args:
+      chdir: /home/ubuntu
+
+  - debug: msg={{ output.stdout }} 
+  
+  - name: List files
+    shell: ls -la  
+    register: list 
+    args:
+      chdir: /home/ubuntu/Projects/golang-simple-microservice
+
+  - debug: msg={{ list.stdout }}
+
+  - name: Copy microservice
+    copy:
+      src: /home/lzuccarelli/Projects/golang-simple-service/microservice
+      dest: /home/ubuntu/Projects/golang-simple-microservice
+      owner: ubuntu
+      group: ubuntu
+      mode: '0755'
